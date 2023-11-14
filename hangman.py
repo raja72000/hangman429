@@ -1,45 +1,58 @@
 import random
 
-# List of secret words
-secret_words = ["apple", "banana", "cherry", "grape", "kiwi"]
+class Hangman:
+    def __init__(self, word_list, num_lives=5):
+        self.word_list = word_list
+        self.num_lives = num_lives
+        self.list_of_guesses = []
+        self.word, self.word_guessed, self.num_letters = self.initialize_game()
 
-# Select a random word from the list
-secret_word = random.choice(secret_words)
+    def initialize_game(self):
+        word = random.choice(self.word_list)
+        word_guessed = ['_' for _ in word]
+        num_letters = len(set(word))
+        return word, word_guessed, num_letters
 
-# Initialize a list to store correct guesses
-correct_guesses = []
+    def check_guess(self, guess):
+        guess = guess.lower()
 
-# Function to check if the guess is in the word
-def check_guess(guess):
-    # Convert the guess into lowercase
-    guess = guess.lower()
-
-    # Check if the guess is in the secret word
-    if guess in secret_word:
-        # If the guess is correct, add it to the list of correct guesses
-        correct_guesses.append(guess)
-        print(f"Good guess! '{guess}' is in the word.")
-    else:
-        print(f"Sorry, '{guess}' is not in the word. Try again.")
-
-# Function to ask for user input and check guesses
-def ask_for_input():
-    # Create a while loop to continuously ask the user for a letter
-    while True:
-        # Ask the user to guess a letter and assign it to the variable guess
-        guess = input("Guess a letter: ")
-
-        # Check if the input is a single alphabetical character
-        if len(guess) == 1 and guess.isalpha():
-            # Call the check_guess function to check if the guess is in the word
-            check_guess(guess)
+        if guess in self.word:
+            self.update_word_guessed(guess)
+            print(f"Good guess! '{guess}' is in the word.")
         else:
-            print("Invalid letter. Please, enter a single alphabetical character.")
+            self.reduce_lives()
+            print(f"Sorry, '{guess}' is not in the word.")
+            print(f"You have {self.num_lives} lives left.")
 
-        # Check if all letters in the secret word have been guessed
-        if all(letter in correct_guesses for letter in secret_word):
-            print(f"Congratulations! You guessed the word '{secret_word}' correctly.")
-            break  # Exit the loop if all letters have been guessed
+    def update_word_guessed(self, guess):
+        for i, letter in enumerate(self.word):
+            if letter == guess:
+                self.word_guessed[i] = guess
+        self.num_letters -= 1
 
-# Call the ask_for_input function to start the game
-ask_for_input()
+    def reduce_lives(self):
+        self.num_lives -= 1
+
+    def ask_for_input(self):
+        while True:
+            guess = input("Guess a letter: ")
+
+            if len(guess) != 1 or not guess.isalpha():
+                print("Invalid letter. Please, enter a single alphabetical character.")
+            elif guess in self.list_of_guesses:
+                print("You already tried that letter!")
+            else:
+                self.check_guess(guess)
+                self.list_of_guesses.append(guess)
+
+                if self.num_letters == 0:
+                    print(f"Congratulations! You guessed the word '{self.word}' correctly.")
+                    break
+                elif self.num_lives == 0:
+                    print(f"Game over! The word was '{self.word}'. Better luck next time.")
+                    break
+
+if __name__ == "__main__":
+    words = ["apple", "banana", "cherry", "grape", "kiwi"]
+    game = Hangman(words)
+    game.ask_for_input()
